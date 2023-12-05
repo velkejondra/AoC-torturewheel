@@ -1,3 +1,4 @@
+$star_array = []
 
 def load_input()
   input_matrix = []
@@ -9,7 +10,7 @@ def load_input()
   input_matrix
 end
 
-def check_elem(mat, i, j)
+def check_elem(mat, i, j, num)
   directions = [[-1, 0], [1, 0], [0, -1], [0, 1], [-1, -1], [-1, 1], [1, -1], [1, 1]]
   flag = false
   directions.each do |di, dj|
@@ -18,12 +19,10 @@ def check_elem(mat, i, j)
       if mat[ni][nj].match(/\d/)
         next
       end
-      if [di, dj].include?(directions) && mat[ni][nj] == '*'
-        # todo: dodelat jeste
-
-
-      end
       if mat[ni][nj] != '.'
+        if mat[ni][nj] == '*'
+          $star_array << {"v": num, "x": ni, "y": nj}
+        end
         flag=true
         break
       end
@@ -41,7 +40,8 @@ def check_number(mat, i, j)
       break
     end
   end
-  flag = check_neigbours(mat, i, j, num_arr)
+  n = num_arr.join.to_i
+  flag = check_neigbours(mat, i, j, num_arr, n)
   if flag
     num_arr.join.to_i
   else
@@ -49,15 +49,23 @@ def check_number(mat, i, j)
   end
 end
 
-def check_neigbours(mat, i, j, num_arr)
+def check_neigbours(mat, i, j, num_arr, n)
   flag = false
   for x in 0...num_arr.size
-    flag = check_elem(mat, i, j+x)
+    flag = check_elem(mat, i, j+x, n)
     if flag
       break
     end
   end
   flag
+end
+
+def group_by_coordinates(array)
+  hash = Hash.new { |h, k| h[k] = [] }
+  array.each do |item|
+    hash[[item[:x], item[:y]]] << item[:v]
+  end
+  hash.values.select { |arr| arr.size == 2 }.map { |arr| arr.reduce(:*) }.sum
 end
 
 def iterate_array(mat)
@@ -78,7 +86,7 @@ def iterate_array(mat)
       end
     end
   end
-  sum
+  group_by_coordinates($star_array)
 end
 
 puts iterate_array(load_input)
